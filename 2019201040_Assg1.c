@@ -1,9 +1,13 @@
 /****************************************************/
 /* Original Prog:bincall_v6.c */
 /* functionality: 1.take ip cmd in infinite loop	    */
-/*				*/
+/*	2.>> and > implementation
+/*	3.prompt username@host:$ ($ is hard coded)			*/
 /**/
 /****************************************************/
+
+
+
 
 
 //#include<iostreamu>
@@ -14,28 +18,121 @@
 #include<unistd.h>
 #include<stdio.h>
 #include<string.h>
+#include<fcntl.h>
+#include<sys/types.h>
+#include<pwd.h>
 
-//using namespace std; 
+
+//using namespace std;
+void fappend_write(char* src,char* tar){
+	//printf("\nSource:%s",src);
+	//printf("\nTarget:%s",tar);
+	 int f1 =open(src,O_RDONLY);
+        if(f1<0){
+                printf("Error in reading .  .. \n");
+                return;
+        }
+        int f2 =open(tar,O_WRONLY|O_APPEND|O_CREAT,0777);
+        //int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC);
+        if(f2<0){
+                printf("Error in target file open .  .. \n");
+                return;
+        }
+        int r,w;
+        char c;
+        //printf("\nstart. .  . \n");
+        while(r>0)
+        {
+                r=read(f1,&c,sizeof(c));
+                write(f2,&c,sizeof(c));
+        }
+        //printf("\nEnd.   . . . . \n");
+        return;
+};
+void fover_write(char* src,char* tar){
+        printf("\nSource:%s",src);
+        printf("\nTarget:%s",tar);
+
+	int f1 =open(src,O_RDONLY);
+	if(f1<0){
+		printf("Error in reading .  .. \n");
+		return;
+	}
+	//int f2 =open(tar,O_WRONLY|O_CREAT,0777);
+	int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC|O_CREAT,0777);
+	if(f2<0){
+                printf("Error in target file open .  .. \n");
+		return;
+        }
+	int r,w;
+	char c;
+	printf("\nstart. .  . \n");
+	while(r>0)
+	{
+		r=read(f1,&c,sizeof(c));
+		write(f2,&c,sizeof(c));
+	}
+	printf("\nEnd.   . . . . \n");
+	return;
+	
+};
+
+
+ 
 int main(){
+	//for fgets
 	char s[1024];
+	//for getline()
+	/*char *s;
+	size_t s_size = 1024;
+	s = (char *)malloc(s_size * sizeof(char));
+    	if( s == NULL)
+    	{
+        	perror("Unable to allocate buffer");
+        	exit(1);
+    	}*/
 	char* argv[100];
 	char path[50];
 	char cmd[1024];
-	char end[]="exit\n";
-	char stp[]="STOP";
+//	char end[]="exit\n";
+//	char stp[]="STOP";
 
 	while(1){
-		
+
+		/**/
+
+		struct passwd *pwd = getpwuid(getuid());  // Check for NULL!
+		char* usr= pwd->pw_name;
+
+		char hst[100+1];
+		gethostname(hst, sizeof(hst));  // Check the return value!
+
+		char sym[1]="$";
+
+
+		printf("\n%s@%s:%s",usr,hst,sym);
+		/**/
+		int flg=0;		
+		//if(!getline(&s,&s_size,stdin))
 		if(!fgets(s,1024,stdin))
 			break;
-		 if(strcmp(s,end)==0)
+		if(strcmp(s,"exit\n")==0)
                                 break;
 		char *p = strchr(s, '\n');
                 if (p) *p = 0;
 
-		 strcat(s," STOP ");
+		 //strcat(s," STOP ");
 
-    
+    		/***************************
+
+		char * prompt[4];
+                prompt[0]="/bin/echo";
+		prompt[1]="-n";
+		prompt[2]="$(whoami)@$(hostname)$PWD";
+		prompt[3]=(char*)0;
+		execvp(prompt[0],prompt);
+		 ****************************/
+		char nouse[]="";
 		char bin[]="/bin/";
 		strcpy(cmd,bin);
 		char line[1024];
@@ -49,8 +146,28 @@ int main(){
 		int i=0;
 		while (s1!= NULL)
   		{
-    			if(strcmp(s1,stp)==0)
-                                break;
+    			if(s1[strlen(s1)-1] == '\n'){
+				printf("\nMilgaya Enter . . . balleh balleh. .\n");
+				return 0;
+			}
+			printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
+			//if(strcmp(s1,stp)==0)
+                           //     break;
+			if(!strcmp(s1,">")){
+				char* src=args1[i-1];
+				char* tar=strtok(NULL," ");
+				fover_write(src,tar);
+				flg=1;
+				break;
+			}
+			if(!strcmp(s1,">>")){
+                                char* src=args1[i-1];
+                                char* tar=strtok(NULL," ");
+                                fappend_write(src,tar);
+				flg=1;
+				break;
+                        }
+
     			s1 = strtok (NULL, " ");
 			args1[++i]=s1;
 			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
@@ -66,6 +183,8 @@ int main(){
 		//
 
 		//printf("\n Path:%s s input :%s \n",cmd,s);
+		if(flg==1)
+			continue;
         	int pid= fork();
 		if(pid<0){
 			printf("\nERROR: in pid\n");
