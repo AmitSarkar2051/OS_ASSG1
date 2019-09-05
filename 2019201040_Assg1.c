@@ -1,15 +1,3 @@
-/****************************************************/
-/* Original Prog:bincall_v6.c */
-/* functionality: 1.take ip cmd in infinite loop	    */
-/*	2.>> and > implementation
-/*	3.prompt username@host:$ ($ is hard coded)			*/
-/**/
-/****************************************************/
-
-
-
-
-
 //#include<iostreamu>
 #include<stdlib.h>
 #include<unistd.h>
@@ -150,7 +138,12 @@ int main(){
 				printf("\nMilgaya Enter . . . balleh balleh. .\n");
 				return 0;
 			}
-			printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
+			if(!strcmp(s1,"$HOME")){
+				printf("%s\n",pwd->pw_dir);
+				flg=1;
+				break;
+			}
+			//printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
 			//if(strcmp(s1,stp)==0)
                            //     break;
 			if(!strcmp(s1,">")){
