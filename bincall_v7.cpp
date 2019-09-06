@@ -1,4 +1,4 @@
-//#include<iostreamu>
+#include<iostream>
 #include<stdlib.h>
 #include<unistd.h>
 #include<sys/wait.h>
@@ -9,10 +9,7 @@
 #include<fcntl.h>
 #include<sys/types.h>
 #include<pwd.h>
-//#include "al_map.h"
-char _lalias[100][10];
-char _ralias[100][50];
-int _calias=0;
+#include "al_map.h"
 
 
 //using namespace std;
@@ -99,38 +96,31 @@ void fover_write(char* src,char* tar){
 	return;
 	
 };
- char *lft;
-   char* rht;
-   char cln[100];
-
-char* al_str_cleansing()
-{
-//	char* cln;
-	int c=0;
-	int d=0;
-	while (rht[c] != '\0')
-   	{
-      	if (!(rht[c] == '=' || rht[c] == '"')) {
-        	cln[d] = rht[c];
-        d++;
-      }
-      c++;
-   }
-
-   cln[d] = '\0';
-   //return *cln;
-};
-//=strtok(str,"=");
-void al_arr_update(){
-	strcpy(_lalias[_calias],lft);
-        strcpy(_ralias[_calias],cln);
-        _calias++;
-}
+/*void makealias(char* str){
+	char* lft=strtok(str,"=");
+	char* ptr;//=strtok(str,"=");
+	char rht[100];
+	//strcpy(rht,ptr);
+	while(1)
+	{
+		ptr = strtok (NULL, "=");
+		if(ptr==NULL)
+			break;
+		printf("\nptr: %s",ptr);
+		strcat(rht," ");
+		printf("\nrt spc : %s",rht);
+                strcat(rht,ptr);
+		printf("\nrht tot:%s",rht);
+		//ptr = strtok (NULL, " ");
+		printf("    *    ");
+	}
+	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,lft, rht);
+};*/
 void makealias(char* str){
 	char line[100];
 	strcpy(line,str);
-        lft = strtok(line,"=");
-        rht=strchr(str,'=');//=strtok(str,"=");
+        char *lft = strtok(line,"=");
+        char* rht=strchr(str,'=');//=strtok(str,"=");
         //char* rht;
 	//rht=n;
 	char tar[]="mybashrc";
@@ -140,28 +130,11 @@ void makealias(char* str){
                 printf("Error in target file open .  .. \n");
                 return;
         }
-	//fprintf (fbrc,"%s%s\n", lft,rht);
-	al_str_cleansing();
-	al_arr_update();
-//	myprint(lft,rht);
-	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,_lalias[_calias-1],_ralias[_calias-1]);
-	char e='=';
-	fprintf (fbrc,"%s%c%s\n", lft,e,cln);
+	fprintf (fbrc,"%s%s\n", lft,rht);
+	myprint(lft,rht);
 	fclose(fbrc);
 
 };
-
-int al_srch(char* s1){
-	int i=0;
-	int _f=-1;
-	while(i <= _calias){
-		if(strcmp(s1,_lalias[i])==0)
-			_f=i;
-		i++;
-		
-	}
-	return  _f;
-}
  
 int main(){
 	//for fgets
@@ -196,7 +169,7 @@ int main(){
 		char sym='$';
 
 
-		printf("\n%s@%s:%c",usr,hst,sym);
+		printf("\n%s@%s:%s",usr,hst,sym);
 		/**/
 		int flg=0;		
 		//if(!getline(&s,&s_size,stdin))
@@ -224,29 +197,15 @@ int main(){
 		char line[1024];
 		strcpy(line,s);
 		char* s1=strtok(line," ");
-		printf("\n *******************s1 val: %s\n",s1);
-		int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-		_falias=-1;
-		     printf("\n s1 val: %s",s1);
-		
 		strcat(cmd,s1);
     
 		// 2nd arg for execv args
 		char * args1[100];
-		/*int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-			    */
-	 printf("\nf val: %d\n",_falias);
 		args1[0]=s1;
 		int i=0;
 		while (s1!= NULL)
   		{
-    			
-			
-			if(s1[strlen(s1)-1] == '\n'){
+    			if(s1[strlen(s1)-1] == '\n'){
 				printf("\nMilgaya Enter . . . balleh balleh. .\n");
 				return 0;
 			}
@@ -283,16 +242,7 @@ int main(){
                         }
 
     			s1 = strtok (NULL, " ");
-			printf("\n********************** s1 val: %s\n",s1);
-			if(s1!=NULL)
-				_falias=al_srch(s1);
-			if(_falias > -1)
-				strcpy(s1,_ralias[_falias]);
-				
-			printf("\n**************************** s1 val: %s\n",s1);
-
 			args1[++i]=s1;
-			_falias=-1;
 			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
 
   		}

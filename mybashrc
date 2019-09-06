@@ -1,0 +1,9 @@
+user : as2051
+host : as2051-Ideapad-Z570
+HOME : /home/as2051
+PS1 : $
+PWD : as2051
+PATH : as2051
+dikha=ls
+sabdikha=ls -lrt -a
+showme=cat

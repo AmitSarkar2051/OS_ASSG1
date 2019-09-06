@@ -1,3 +1,15 @@
+/****************************************************/
+/* Original Prog:bincall_v6.c */
+/* functionality: 1.take ip cmd in infinite loop	    */
+/*	2.>> and > implementation
+/*	3.prompt username@host:$ ($ is hard coded)			*/
+/**/
+/****************************************************/
+
+
+
+
+
 //#include<iostreamu>
 #include<stdlib.h>
 #include<unistd.h>
@@ -9,44 +21,9 @@
 #include<fcntl.h>
 #include<sys/types.h>
 #include<pwd.h>
-//#include "al_map.h"
-char _lalias[100][10];
-char _ralias[100][50];
-int _calias=0;
 
 
 //using namespace std;
-//
-void bashrccreation(){
-	char tar[]="mybashrc";
-	FILE* fbrc =fopen(tar,"w");
-        if(fbrc<0){
-                printf("Error in target file open .  .. \n");
-                return;
-        }
-	struct passwd *pwd = getpwuid(getuid());
-       	char hst[100+1];
-        gethostname(hst, sizeof(hst));	
-	char sym='$';
-	
-	fprintf (fbrc,"user : %s\n", pwd->pw_name);
-	fprintf (fbrc,"host : %s\n", hst);
-	fprintf (fbrc,"HOME : %s\n", pwd->pw_dir);
-	fprintf (fbrc,"PS1 : %c\n", sym);
-	fprintf (fbrc,"PWD : %s\n", pwd->pw_name);
-	fprintf (fbrc,"PATH : %s\n", pwd->pw_name);
-	fclose(fbrc);
-                /*struct passwd *pwd = getpwuid(getuid());  // Check for NULL!
-                char* usr= pwd->pw_name;
-
-                char hst[100+1];
-                gethostname(hst, sizeof(hst));  // Check the return value!
-
-                char sym[1]="$";
-		  printf("%s\n",pwd->pw_dir);*/
-	return;
-
-};
 void fappend_write(char* src,char* tar){
 	//printf("\nSource:%s",src);
 	//printf("\nTarget:%s",tar);
@@ -99,69 +76,8 @@ void fover_write(char* src,char* tar){
 	return;
 	
 };
- char *lft;
-   char* rht;
-   char cln[100];
 
-char* al_str_cleansing()
-{
-//	char* cln;
-	int c=0;
-	int d=0;
-	while (rht[c] != '\0')
-   	{
-      	if (!(rht[c] == '=' || rht[c] == '"')) {
-        	cln[d] = rht[c];
-        d++;
-      }
-      c++;
-   }
 
-   cln[d] = '\0';
-   //return *cln;
-};
-//=strtok(str,"=");
-void al_arr_update(){
-	strcpy(_lalias[_calias],lft);
-        strcpy(_ralias[_calias],cln);
-        _calias++;
-}
-void makealias(char* str){
-	char line[100];
-	strcpy(line,str);
-        lft = strtok(line,"=");
-        rht=strchr(str,'=');//=strtok(str,"=");
-        //char* rht;
-	//rht=n;
-	char tar[]="mybashrc";
-	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,lft,rht);
-	FILE* fbrc =fopen(tar,"a+");
-        if(fbrc<0){
-                printf("Error in target file open .  .. \n");
-                return;
-        }
-	//fprintf (fbrc,"%s%s\n", lft,rht);
-	al_str_cleansing();
-	al_arr_update();
-//	myprint(lft,rht);
-	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,_lalias[_calias-1],_ralias[_calias-1]);
-	char e='=';
-	fprintf (fbrc,"%s%c%s\n", lft,e,cln);
-	fclose(fbrc);
-
-};
-
-int al_srch(char* s1){
-	int i=0;
-	int _f=-1;
-	while(i <= _calias){
-		if(strcmp(s1,_lalias[i])==0)
-			_f=i;
-		i++;
-		
-	}
-	return  _f;
-}
  
 int main(){
 	//for fgets
@@ -181,8 +97,6 @@ int main(){
 //	char end[]="exit\n";
 //	char stp[]="STOP";
 
-	/* bashrc file creation*/
-	bashrccreation();
 	while(1){
 
 		/**/
@@ -193,10 +107,10 @@ int main(){
 		char hst[100+1];
 		gethostname(hst, sizeof(hst));  // Check the return value!
 
-		char sym='$';
+		char sym[1]="$";
 
 
-		printf("\n%s@%s:%c",usr,hst,sym);
+		printf("\n%s@%s:%s",usr,hst,sym);
 		/**/
 		int flg=0;		
 		//if(!getline(&s,&s_size,stdin))
@@ -224,48 +138,21 @@ int main(){
 		char line[1024];
 		strcpy(line,s);
 		char* s1=strtok(line," ");
-		printf("\n *******************s1 val: %s\n",s1);
-		int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-		_falias=-1;
-		     printf("\n s1 val: %s",s1);
-		
 		strcat(cmd,s1);
     
 		// 2nd arg for execv args
 		char * args1[100];
-		/*int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-			    */
-	 printf("\nf val: %d\n",_falias);
 		args1[0]=s1;
 		int i=0;
 		while (s1!= NULL)
   		{
-    			
-			
-			if(s1[strlen(s1)-1] == '\n'){
+    			if(s1[strlen(s1)-1] == '\n'){
 				printf("\nMilgaya Enter . . . balleh balleh. .\n");
 				return 0;
 			}
-			if(!strcmp(s1,"$HOME")){
-				printf("%s\n",pwd->pw_dir);
-				flg=1;
-				break;
-			}
-			//printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
+			printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
 			//if(strcmp(s1,stp)==0)
                            //     break;
-			   if(!strcmp(s1,"alias")){
-                                char* al=strtok(NULL,"\n");
-                                makealias(al);
-                                flg=1;
-                                break;
-                        }
-
-			   //     overwrite >
 			if(!strcmp(s1,">")){
 				char* src=args1[i-1];
 				char* tar=strtok(NULL," ");
@@ -273,7 +160,6 @@ int main(){
 				flg=1;
 				break;
 			}
-			// append >>
 			if(!strcmp(s1,">>")){
                                 char* src=args1[i-1];
                                 char* tar=strtok(NULL," ");
@@ -283,16 +169,7 @@ int main(){
                         }
 
     			s1 = strtok (NULL, " ");
-			printf("\n********************** s1 val: %s\n",s1);
-			if(s1!=NULL)
-				_falias=al_srch(s1);
-			if(_falias > -1)
-				strcpy(s1,_ralias[_falias]);
-				
-			printf("\n**************************** s1 val: %s\n",s1);
-
 			args1[++i]=s1;
-			_falias=-1;
 			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
 
   		}

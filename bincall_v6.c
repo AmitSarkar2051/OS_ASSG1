@@ -224,22 +224,13 @@ int main(){
 		char line[1024];
 		strcpy(line,s);
 		char* s1=strtok(line," ");
-		printf("\n *******************s1 val: %s\n",s1);
-		int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-		_falias=-1;
-		     printf("\n s1 val: %s",s1);
-		
 		strcat(cmd,s1);
     
 		// 2nd arg for execv args
 		char * args1[100];
 		/*int  _falias=al_srch(s1);
                      if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-			    */
-	 printf("\nf val: %d\n",_falias);
+                            strcpy(s1,_ralias[_falias]);*/
 		args1[0]=s1;
 		int i=0;
 		while (s1!= NULL)
@@ -283,16 +274,11 @@ int main(){
                         }
 
     			s1 = strtok (NULL, " ");
-			printf("\n********************** s1 val: %s\n",s1);
-			if(s1!=NULL)
-				_falias=al_srch(s1);
+	/*		_falias=al_srch(s1);
 			if(_falias > -1)
 				strcpy(s1,_ralias[_falias]);
-				
-			printf("\n**************************** s1 val: %s\n",s1);
-
+				*/
 			args1[++i]=s1;
-			_falias=-1;
 			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
 
   		}
