@@ -47,6 +47,54 @@ void bashrccreation(){
 	return;
 
 };
+//history maintain and retrieve
+void add_history(char* s){
+	//char his[]="/home/as2051/myhistory.txt";
+	char his[]="myhistory.txt";
+	FILE* fhis =fopen(his,"a+");
+        if(fhis<0){
+                printf("Error in History file open .  .. \n");
+                return;
+        }
+        fprintf (fhis,"%s",s);
+	fclose(fhis);
+	return;
+}
+void clear_history(){
+	char his[]="myhistory.txt";
+        FILE* fhis =fopen(his,"w");
+        if(fhis<0){
+                printf("Error in History file open .  .. \n");
+                return;
+        }
+        fclose(fhis);
+        return;
+
+}
+void show_history(){
+	char* his[5];
+	his[0]="cat";
+	his[1]="myhistory.txt";
+	his[2]="-n";
+	his[3]=(char*)0;
+	int pid= fork();
+        if(pid<0){
+        	printf("\nERROR: in pid\n");
+                return ;
+        }
+        //fork child
+        if(pid==0) {
+		printf("\n***************History till the last clean****************\n");
+                 execvp("cat",his);
+                 perror("exec");
+                 exit(1);
+	} 
+	//Parent
+	else {
+              wait(NULL);
+        }
+}
+
 void fappend_write(char* src,char* tar){
 	//printf("\nSource:%s",src);
 	//printf("\nTarget:%s",tar);
@@ -161,11 +209,34 @@ int al_srch(char* s1){
 		
 	}
 	return  _f;
-}
+};
+int repeat;
+void alarm_handle(int sig) {
+    //printf("\nALARM: ********** Hi ALARM Is Activated **************\n");
+    if(--repeat){
+    	alarm(1);
+	printf("\nALARM: ********** Hi ALARM Is Activated **************\n");
+    }
+    else{
+	    repeat=10;
+	    exit(0);
+    }
+    //alarm(1);
+    return ;
+};
+void set_alarm(int alarm_tm){
+	signal(SIGALRM, alarm_handle);
+    	alarm(alarm_tm);
+    	while(repeat) 
+		sleep(1);
+    	printf("\nALARM: alarm stopped at %d. . . . .\n",alarm_tm);
+    	return ;
+};
+
  
 int main(){
 	//for fgets
-	char s[1024];
+	//char s[1024];
 	//for getline()
 	/*char *s;
 	size_t s_size = 1024;
@@ -186,7 +257,7 @@ int main(){
 	while(1){
 
 		/**/
-
+		int i=0;
 		struct passwd *pwd = getpwuid(getuid());  // Check for NULL!
 		char* usr= pwd->pw_name;
 
@@ -198,12 +269,25 @@ int main(){
 
 		printf("\n%s@%s:%c",usr,hst,sym);
 		/**/
-		int flg=0;		
+		int flg=0;	
+		fflush(stdin); 
+		fflush(stdout); 
 		//if(!getline(&s,&s_size,stdin))
+		 char s[1024];
 		if(!fgets(s,1024,stdin))
 			break;
+		add_history(s);
 		if(strcmp(s,"exit\n")==0)
                                 break;
+		if(!strcmp(s,"history\n")){
+                        show_history();
+                        flg=1;
+                }
+		if(!strcmp(s,"clear history\n")){
+                        clear_history();
+                        flg=1;
+                }
+
 		char *p = strchr(s, '\n');
                 if (p) *p = 0;
 
@@ -222,26 +306,73 @@ int main(){
 		char bin[]="/bin/";
 		strcpy(cmd,bin);
 		char line[1024];
+		char * args1[100];
 		strcpy(line,s);
 		char* s1=strtok(line," ");
 		printf("\n *******************s1 val: %s\n",s1);
+		
+		//ALARM
+		if(!strcmp(s1,"alarm")){
+				repeat=10;
+                                char* alarm=args1[0]; //
+                                char* alarm_tm=strtok(NULL," ");
+				int alarm_tm_int=atoi(alarm_tm);
+                                //int alarm_tm_int= (int)strtok(NULL," ");
+				if(repeat>0)
+					set_alarm(alarm_tm_int);
+                                flg=1;
+				repeat=0;
+				fflush(stdin);
+		                fflush(stdout);
+
+				strcpy(s1,"x");
+				continue;
+                        }		
+		
 		int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
+                if(_falias > -1){
+			printf("\n . .. .. . %d.. . .. .\n",_falias);
+			 char alline[100];
+                         strcpy(alline,_ralias[_falias]);
+			 char* als1=strtok(alline," ");
+			  printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
+			 //args1[0]=als1;
+			 s1=als1;
+			 strcat(cmd,als1);
+			 while(als1 != NULL){
+			 	//als1 = strtok (NULL, " "i);
+				printf("\nIn while. ..  %d . .. %s\n",i,als1);
+				args1[i++]=als1;
+			 	als1 = strtok (NULL, " ");
+			 }
+		
+		}
+		else if(_falias <= -1){
+			strcat(cmd,s1);
+		 	args1[i++]=s1;
+		}
 		_falias=-1;
 		     printf("\n s1 val: %s",s1);
 		
-		strcat(cmd,s1);
+	//	strcat(cmd,s1);
     
 		// 2nd arg for execv args
-		char * args1[100];
+		//char * args1[100];
 		/*int  _falias=al_srch(s1);
                      if(_falias > -1)
                             strcpy(s1,_ralias[_falias]);
 			    */
 	 printf("\nf val: %d\n",_falias);
-		args1[0]=s1;
-		int i=0;
+		//args1[0]=s1;
+		//int i=0;
+		/*if(!strcmp(s1,"alarm")){
+                                char* alarm=args1[0]; //
+                                char* alarm_tm=strtok(NULL," ");
+                                set_alarm(alarm_tm);
+                                flg=1;
+                               
+                        }*/
+
 		while (s1!= NULL)
   		{
     			
@@ -286,13 +417,36 @@ int main(){
 			printf("\n********************** s1 val: %s\n",s1);
 			if(s1!=NULL)
 				_falias=al_srch(s1);
-			if(_falias > -1)
-				strcpy(s1,_ralias[_falias]);
+			if(_falias > -1){
+			
+                	        printf("\n . .. .. . %d.. . .. .\n",_falias);
+                        	char alline[100];
+                         	strcpy(alline,_ralias[_falias]);
+                         	char* als1=strtok(alline," ");
+                          	printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
+                         	//args1[0]=als1;
+                         	s1=als1;
+                         	//strcat(cmd,als1);
+                         	while(als1 != NULL){
+                                //als1 = strtok (NULL, " "i);
+                                	printf("\nIn while. ..  %d . .. %s\n",i,als1);
+                                	args1[i++]=als1;
+                                	als1 = strtok (NULL, " ");
+                         	}
+
+                
+
+			}
+			//	strcpy(s1,_ralias[_falias]);
 				
 			printf("\n**************************** s1 val: %s\n",s1);
+			if(_falias <= -1){
+                        	args1[i++]=s1;
+	                }
+                	_falias=-1;
 
-			args1[++i]=s1;
-			_falias=-1;
+			//args1[i++]=s1;
+			//_falias=-1;
 			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
 
   		}
