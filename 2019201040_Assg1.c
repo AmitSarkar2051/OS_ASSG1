@@ -1,4 +1,3 @@
-//#include<iostreamu>
 #include<stdlib.h>
 #include<unistd.h>
 #include<sys/wait.h>
@@ -9,18 +8,23 @@
 #include<fcntl.h>
 #include<sys/types.h>
 #include<pwd.h>
-//#include "al_map.h"
 
-//global var
+//global var for parsing command
 char s[1024];
 char* argv[100];
 char path[50];
 char cmd[1024];
 
+
+//global var for alias
 char _lalias[100][10];
 char _ralias[100][50];
 int _calias=0;
+char *lft;
+char* rht;
+char cln[100];
 
+//global var for pipe
 int io=0;
 int pip[2];
 
@@ -32,7 +36,7 @@ void alarm_handle(int);
 int al_srch(char*);
 void makealias(char*);
 void al_arr_update();
-char* al_str_cleansing();
+void al_str_cleansing();
 void fover_write(char*,char*);
 void fappend_write(char*,char*);
 void fappend_write_cmd(char*);
@@ -45,16 +49,16 @@ void pip_exec(int , char**);
 
 void ext_parse(char *s, char* tar, int ch)
 {
-		printf("\nEXT PARSE start with : ---%s--------------\n",s);
+		//printf("\nEXT PARSE start with : ---%s--------------\n",s);
 		char *p = strchr(s, '\n');
                 if (p) *p = 0;
-		printf("\nEXT PARSE start with : ---%s--------------\n",s);
+		//printf("\nEXT PARSE start with : ---%s--------------\n",s);
 		int i=0	;
 		int flg=0;
-		struct passwd *pwd = getpwuid(getuid());  // Check for NULL!
+		struct passwd *pwd = getpwuid(getuid());
 		char* usr= pwd->pw_name;
 		char hst[100+1];
-		gethostname(hst, sizeof(hst));  // Check the return value!
+		gethostname(hst, sizeof(hst));
 		char sym='$';	
 		//char bin[]="/bin/";
 		char bin[]="";
@@ -62,23 +66,21 @@ void ext_parse(char *s, char* tar, int ch)
 		char line[1024];
 		char * args1[100];
 		strcpy(line,s);
-		printf("\nline in exPAr:----%s---\n",line);
+		//printf("\nline in exPAr:----%s---\n",line);
 		char* s1=strtok(line," ");
-		printf("\n  In expar s1 val:-----%s-----\n",s1);
+		//printf("\n  In expar s1 val:-----%s-----\n",s1);
 	
 		int  _falias=al_srch(s1);
                 if(_falias > -1){
-			printf("\n . .. .. . %d.. . .. .\n",_falias);
+			//printf("\n . .. .. . %d.. . .. .\n",_falias);
 			 char alline[100];
                          strcpy(alline,_ralias[_falias]);
 			 char* als1=strtok(alline," ");
-			  printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
-			 //args1[0]=als1;
+			  //printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
 			 s1=als1;
 			 strcat(cmd,als1);
 			 while(als1 != NULL){
-			 	//als1 = strtok (NULL, " "i);
-				printf("\nIn while. ..  %d . .. %s\n",i,als1);
+				//printf("\nIn while. ..  %d . .. %s\n",i,als1);
 				args1[i++]=als1;
 			 	als1 = strtok (NULL, " ");
 			 }
@@ -89,8 +91,8 @@ void ext_parse(char *s, char* tar, int ch)
 		 	args1[i++]=s1;
 		}
 		_falias=-1;
-		     printf("\n s1 val: %s",s1);
-	 printf("\nf val: %d\n",_falias);
+		//printf("\n s1 val: %s",s1);
+	 	//printf("\nf val: %d\n",_falias);
 		while (s1!= NULL)
   		{
 			if(!strcmp(s1,"$HOME")){
@@ -105,20 +107,19 @@ void ext_parse(char *s, char* tar, int ch)
                                 break;
                         }
     			s1 = strtok (NULL, " ");
-			printf("\n********************** s1 val: %s\n",s1);
+			//printf("\n********************** s1 val: %s\n",s1);
 			if(s1!=NULL)
 				_falias=al_srch(s1);
 			if(_falias > -1){
 			
-                	        printf("\n . .. .. . %d.. . .. .\n",_falias);
+                	        //printf("\n . .. .. . %d.. . .. .\n",_falias);
                         	char alline[100];
                          	strcpy(alline,_ralias[_falias]);
                          	char* als1=strtok(alline," ");
-                          	printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
+                          	//printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
                          	s1=als1;
                          	while(als1 != NULL){
-                                //als1 = strtok (NULL, " "i);
-                                	printf("\nIn while. ..  %d . .. %s\n",i,als1);
+                                	//printf("\nIn while. ..  %d . .. %s\n",i,als1);
                                 	args1[i++]=als1;
                                 	als1 = strtok (NULL, " ");
                          	}
@@ -126,7 +127,7 @@ void ext_parse(char *s, char* tar, int ch)
                 
 
 			}
-			printf("\n**************************** s1 val: %s\n",s1);
+			//printf("\n**************************** s1 val: %s\n",s1);
 			if(_falias <= -1){
                         	args1[i++]=s1;
 	                }
@@ -147,7 +148,7 @@ void ext_parse(char *s, char* tar, int ch)
 				case 1:
 					// > overwrite implementation
 					{
-					printf("\nIN CASE 1\n");
+					//printf("\nIN CASE 1\n");
 					int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC|O_CREAT,0777);
         				if(f2<0){
                 				printf("Error in target file open .  .. \n");
@@ -160,7 +161,7 @@ void ext_parse(char *s, char* tar, int ch)
 				case 2:
 					{
 
-					printf("\nIN CASE 2\n");
+					//printf("\nIN CASE 2\n");
 					// > append implementation
 					int f2 =open(tar,O_WRONLY|O_APPEND|O_CREAT,0777);
         				if(f2<0){
@@ -173,7 +174,7 @@ void ext_parse(char *s, char* tar, int ch)
 					}
 				case 3:
 					{
-					printf("\nIN CASE 3\n");
+					//printf("\nIN CASE 3\n");
 					//  implementation
 					if(io!=0){
 						dup2(io,0);
@@ -187,7 +188,7 @@ void ext_parse(char *s, char* tar, int ch)
 					}
 				case 4:
 					{
-					printf("\nIN CASE 4\n");
+					//printf("\nIN CASE 4\n");
 					break;
 					}
 				default:
@@ -200,13 +201,14 @@ void ext_parse(char *s, char* tar, int ch)
 				perror("exec");
   	          		exit(1);
 			}  
-		      } else {                    //Parent
+		      } else {               
             			wait(NULL);
         			}
     }
     return ;
 };
 
+//bashrc 
 void bashrccreation(){
 	char tar[]="mybashrc";
 	FILE* fbrc =fopen(tar,"w");
@@ -228,17 +230,10 @@ void bashrccreation(){
 	fprintf (fbrc,"PWD : %s\n", cwd);
 	//fprintf (fbrc,"PATH : %s\n", pwd->pw_name);
 	fclose(fbrc);
-                /*struct passwd *pwd = getpwuid(getuid());  // Check for NULL!
-                char* usr= pwd->pw_name;
-
-                char hst[100+1];
-                gethostname(hst, sizeof(hst));  // Check the return value!
-
-                char sym[1]="$";
-		  printf("%s\n",pwd->pw_dir);*/
 	return;
 
 };
+
 //history maintain and retrieve
 void add_history(char* s){
 	//char his[]="/home/as2051/myhistory.txt";
@@ -252,6 +247,7 @@ void add_history(char* s){
 	fclose(fhis);
 	return;
 }
+//clean the existing history
 void clear_history(){
 	char his[]="myhistory.txt";
         FILE* fhis =fopen(his,"w");
@@ -264,7 +260,7 @@ void clear_history(){
 
 }
 void show_history(){
-	char* his[5];
+	char* his[4];
 	his[0]="cat";
 	his[1]="myhistory.txt";
 	his[2]="-n";
@@ -274,89 +270,65 @@ void show_history(){
         	printf("\nERROR: in pid\n");
                 return ;
         }
-        //fork child
         if(pid==0) {
 		printf("\n***************History till the last clean****************\n");
                  execvp("cat",his);
                  perror("exec");
                  exit(1);
 	} 
-	//Parent
 	else {
               wait(NULL);
         }
 }
+// io operator > and >>
 void fappend_write_cmd(char* tar){
-
-	/*int f2 =open(tar,O_WRONLY|O_APPEND|O_CREAT,0777);
-        //int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC);
-        if(f2<0){
-                printf("Error in target file open .  .. \n");
-                return;
-        }
-	*/	//string seperation
+	//string seperation
 	char *f=s, *b=s;
 	strsep(&b,">");
-	printf("\nsep ..  . .. %s\n",f);
+	//printf("\nsep ..  . .. %s\n",f);
 	ext_parse(f,tar,1);
-	//free(f);
-	//free(b);
     	return ;
 }
 void fover_write_cmd(char* tar){
-
-	/*int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC|O_CREAT,0777);
-        //int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC);
-        if(f2<0){
-                printf("Error in target file open .  .. \n");
-                return;
-        }*/
 	char *f=s, *b=s;
 	strsep(&b,">");
-	printf("\nsep ..  . .. %s\n",f);
+	//printf("\nsep ..  . .. %s\n",f);
 	ext_parse(f,tar,2);
-	//free(f);
-	//free(b);
 	return;
-
 }
 void fappend_write(char* src,char* tar){
-	printf("\nSource:%s",src);
-	printf("\nTarget:%s",tar);
+	//printf("\nSource:%s",src);
+	//printf("\nTarget:%s",tar);
 	 int f1 =open(src,O_RDONLY);
         if(f1<0){
-                printf("Error in reading .  .. \n");
+               // printf("Error in reading .  .. \n");
 		fappend_write_cmd(tar);
                 return;
         }
         int f2 =open(tar,O_WRONLY|O_APPEND|O_CREAT,0777);
-        //int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC);
         if(f2<0){
                 printf("Error in target file open .  .. \n");
                 return;
         }
         int r,w;
         char c;
-        //printf("\nstart. .  . \n");
         while(r>0)
         {
                 r=read(f1,&c,sizeof(c));
                 write(f2,&c,sizeof(c));
         }
-        //printf("\nEnd.   . . . . \n");
         return;
 };
 void fover_write(char* src,char* tar){
-        printf("\nSource:%s",src);
-        printf("\nTarget:%s",tar);
+        //printf("\nSource:%s",src);
+        //printf("\nTarget:%s",tar);
 
 	int f1 =open(src,O_RDONLY);
 	if(f1<0){
-		printf("Error in reading .  .. \n");
+		//printf("Error in reading .  .. \n");
 		fover_write_cmd(tar);		
 		return;
 	}
-	//int f2 =open(tar,O_WRONLY|O_CREAT,0777);
 	int f2 =open(tar,O_RDONLY | O_WRONLY | O_TRUNC|O_CREAT,0777);
 	if(f2<0){
                 printf("Error in target file open .  .. \n");
@@ -364,23 +336,18 @@ void fover_write(char* src,char* tar){
         }
 	int r,w;
 	char c;
-	printf("\nstart. .  . \n");
 	while(r>0)
 	{
 		r=read(f1,&c,sizeof(c));
 		write(f2,&c,sizeof(c));
 	}
-	printf("\nEnd.   . . . . \n");
 	return;
 	
 };
- char *lft;
-   char* rht;
-   char cln[100];
-
-char* al_str_cleansing()
+//alias
+//alias string cleaning
+void al_str_cleansing()
 {
-//	char* cln;
 	int c=0;
 	int d=0;
 	while (rht[c] != '\0')
@@ -391,41 +358,36 @@ char* al_str_cleansing()
       }
       c++;
    }
-
    cln[d] = '\0';
    //return *cln;
 };
-//=strtok(str,"=");
+//alias string update in array
 void al_arr_update(){
 	strcpy(_lalias[_calias],lft);
         strcpy(_ralias[_calias],cln);
         _calias++;
 }
+//alias update in mybashrc
 void makealias(char* str){
 	char line[100];
 	strcpy(line,str);
         lft = strtok(line,"=");
         rht=strchr(str,'=');//=strtok(str,"=");
-        //char* rht;
-	//rht=n;
 	char tar[]="mybashrc";
-	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,lft,rht);
+	//printf("\nalias : %s \nleft:%s \nRight:%s \n",str,lft,rht);
 	FILE* fbrc =fopen(tar,"a+");
         if(fbrc<0){
                 printf("Error in target file open .  .. \n");
                 return;
         }
-	//fprintf (fbrc,"%s%s\n", lft,rht);
 	al_str_cleansing();
 	al_arr_update();
-//	myprint(lft,rht);
-	printf("\nalias : %s \nleft:%s \nRight:%s \n",str,_lalias[_calias-1],_ralias[_calias-1]);
+	//printf("\nalias : %s \nleft:%s \nRight:%s \n",str,_lalias[_calias-1],_ralias[_calias-1]);
 	char e='=';
 	fprintf (fbrc,"%s%c%s\n", lft,e,cln);
 	fclose(fbrc);
-
 };
-
+//alias search
 int al_srch(char* s1){
 	int i=0;
 	int _f=-1;
@@ -433,7 +395,6 @@ int al_srch(char* s1){
 		if(strcmp(s1,_lalias[i])==0)
 			_f=i;
 		i++;
-		
 	}
 	return  _f;
 };
@@ -461,10 +422,10 @@ void set_alarm(int alarm_tm){
 };
 void pip_exec(int x, char** pargs){
 	int i=0;
-	printf("============% d===========",x);
+	//printf("============% d===========",x);
 	for (i=0;i<(x-1);i++){
 		pipe(pip);
-	printf("===========*****=% d===========",i);
+	//printf("===========*****=% d===========",i);
 		ext_parse(pargs[i],NULL,3);
 		close(pip[1]);
 		io=pip[0];	
@@ -474,7 +435,7 @@ void pip_exec(int x, char** pargs){
 	ext_parse(pargs[i],NULL,4);	
 };
 void pip_handle(char* s){
-	printf("\n . .. .. . PIPE CALLED.. . .. .\n");
+	//printf("\n . .. .. . PIPE CALLED.. . .. .\n");
         char pline[1000];
 	char* pargs[100];
         strcpy(pline,s);
@@ -482,44 +443,22 @@ void pip_handle(char* s){
 	char *f=s, *b=s;
 	while(f!=NULL){
 		strsep(&b,"|");
-		printf("\nIn while. ..  . .. %s\n",f);
+		//printf("\nIn while. ..  . .. %s\n",f);
                 pargs[i++]=f;
 		f=b;
 	}
-	//free(f);
-	//free(b);
-	for(int j=0;j<i;j++)
-		printf("\npipe arg %d: %s \n",j,pargs[j]);
+	/*for(int j=0;j<i;j++)
+		printf("\npipe arg %d: %s \n",j,pargs[j]);*/
 	pip_exec(i,pargs);
-
-	printf("\nPipe done . . .\n");
+	//printf("\nPipe done . . .\n");
  	strcpy(s,"\n");
 	return ;
 };
  
 int main(){
-	//for fgets
-	//char s[1024];
-	//for getline()
-	/*char *s;
-	size_t s_size = 1024;
-	s = (char *)malloc(s_size * sizeof(char));
-    	if( s == NULL)
-    	{
-        	perror("Unable to allocate buffer");
-        	exit(1);
-    	}*/
-//	char* argv[100];
-//	char path[50];
-//	char cmd[1024];
-//	char end[]="exit\n";
-//	char stp[]="STOP";
-
 	/* bashrc file creation*/
 	bashrccreation();
 	while(1){
-
-		/**/
 		int i=0;
 		struct passwd *pwd = getpwuid(getuid()); //user name
 		char* usr= pwd->pw_name;
@@ -536,10 +475,6 @@ int main(){
 		printf("\n%s@%s:~%s%c",usr,hst,cwd,sym);
 		/**/
 		int flg=0;	
-		//fflush(stdin); 
-		//fflush(stdout); 
-		//if(!getline(&s,&s_size,stdin))
-		// char s[1024];
 		if(!fgets(s,1024,stdin))
 			break;
 		add_history(s); //history maintain
@@ -564,18 +499,6 @@ int main(){
 
 		char *p = strchr(s, '\n');
                 if (p) *p = 0;
-
-		 //strcat(s," STOP ");
-
-    		/***************************
-
-		char * prompt[4];
-                prompt[0]="/bin/echo";
-		prompt[1]="-n";
-		prompt[2]="$(whoami)@$(hostname)$PWD";
-		prompt[3]=(char*)0;
-		execvp(prompt[0],prompt);
-		 ****************************/
 		char nouse[]="";
 		//char bin[]="/bin/";
 		char bin[]="";
@@ -584,7 +507,7 @@ int main(){
 		char * args1[100];
 		strcpy(line,s);
 		char* s1=strtok(line," ");
-		printf("\n *******************s1 val: %s\n",s1);
+		//printf("\n *******************s1 val: %s\n",s1);
 		//cd implementation
 		if(!strcmp(s1,"cd")){
 			char* s2=strtok(NULL," ");
@@ -592,7 +515,7 @@ int main(){
 			if(e!=0){
 				printf("ERROR: Unable to cd . Error %d",e);
 			}
-			printf("\nChanged the directory to %s",s2);
+			//printf("\nChanged the directory to %s",s2);
 			flg=1;
                         continue;
 
@@ -608,26 +531,25 @@ int main(){
 					set_alarm(alarm_tm_int);
                                 flg=1;
 				repeat=0;
-				fflush(stdin);
-		                fflush(stdout);
-
-				strcpy(s1,"x");
+				//fflush(stdin);
+		                //fflush(stdout);
+				strcpy(s1,"\n");
 				continue;
                         }		
 		
 		int  _falias=al_srch(s1);
                 if(_falias > -1){
-			printf("\n . .. .. . %d.. . .. .\n",_falias);
+			//printf("\n . .. .. . %d.. . .. .\n",_falias);
 			 char alline[100];
                          strcpy(alline,_ralias[_falias]);
 			 char* als1=strtok(alline," ");
-			  printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
+			  //printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
 			 //args1[0]=als1;
 			 s1=als1;
 			 strcat(cmd,als1);
 			 while(als1 != NULL){
 			 	//als1 = strtok (NULL, " "i);
-				printf("\nIn while. ..  %d . .. %s\n",i,als1);
+				//printf("\nIn while. ..  %d . .. %s\n",i,als1);
 				args1[i++]=als1;
 			 	als1 = strtok (NULL, " ");
 			 }
@@ -638,31 +560,10 @@ int main(){
 		 	args1[i++]=s1;
 		}
 		_falias=-1;
-		     printf("\n s1 val: %s",s1);
-		
-	//	strcat(cmd,s1);
-    
-		// 2nd arg for execv args
-		//char * args1[100];
-		/*int  _falias=al_srch(s1);
-                     if(_falias > -1)
-                            strcpy(s1,_ralias[_falias]);
-			    */
-	 printf("\nf val: %d\n",_falias);
-		//args1[0]=s1;
-		//int i=0;
-		/*if(!strcmp(s1,"alarm")){
-                                char* alarm=args1[0]; //
-                                char* alarm_tm=strtok(NULL," ");
-                                set_alarm(alarm_tm);
-                                flg=1;
-                               
-                        }*/
-
+	//	     printf("\n s1 val: %s",s1);
+	 //printf("\nf val: %d\n",_falias);
 		while (s1!= NULL)
   		{
-    			
-			
 			if(s1[strlen(s1)-1] == '\n'){
 				printf("\nMilgaya Enter . . . balleh balleh. .\n");
 				return 0;
@@ -672,9 +573,6 @@ int main(){
 				flg=1;
 				break;
 			}
-			//printf("\nlast char:%c-chking",s1[strlen(s1)-1]);
-			//if(strcmp(s1,stp)==0)
-                           //     break;
 			   if(!strcmp(s1,"alias")){
                                 char* al=strtok(NULL,"\n");
                                 makealias(al);
@@ -700,51 +598,34 @@ int main(){
                         }
 
     			s1 = strtok (NULL, " ");
-			printf("\n********************** s1 val: %s\n",s1);
+			//printf("\n********************** s1 val: %s\n",s1);
 			if(s1!=NULL)
 				_falias=al_srch(s1);
 			if(_falias > -1){
 			
-                	        printf("\n . .. .. . %d.. . .. .\n",_falias);
+                	  //      printf("\n . .. .. . %d.. . .. .\n",_falias);
                         	char alline[100];
                          	strcpy(alline,_ralias[_falias]);
                          	char* als1=strtok(alline," ");
-                          	printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
+                          //	printf("\nOut while. ..  %d . .. %s\n",_falias,als1);
                          	//args1[0]=als1;
                          	s1=als1;
                          	//strcat(cmd,als1);
                          	while(als1 != NULL){
                                 //als1 = strtok (NULL, " "i);
-                                	printf("\nIn while. ..  %d . .. %s\n",i,als1);
+                                	//printf("\nIn while. ..  %d . .. %s\n",i,als1);
                                 	args1[i++]=als1;
                                 	als1 = strtok (NULL, " ");
                          	}
-
-                
-
-			}
-			//	strcpy(s1,_ralias[_falias]);
-				
-			printf("\n**************************** s1 val: %s\n",s1);
+			}	
+			//printf("\n**************************** s1 val: %s\n",s1);
 			if(_falias <= -1){
                         	args1[i++]=s1;
 	                }
                 	_falias=-1;
 
-			//args1[i++]=s1;
-			//_falias=-1;
-			//printf("\ni:%d     p:%s   args[i-1]:%s    s: %s  len of P:%d \n",i,s1,args1[i],s,strlen(s1));
-
   		}
-		/*int tmp= strlen(args1[i-1]);
-		args1[i][tmp-1]='\0';
-		printf("\n\ni:%d_____arg i :%s____sizeof arg i :____%d \n\n",i-1,args1[i-1],strlen(args1[i-1]));
-		*/
 		args1[i]=(char*)0;
-		//args1[i]="donedonadon";
-		
-		//
-
 		//printf("\n Path:%s s input :%s \n",cmd,s);
 		if(flg==1)
 			continue;
@@ -753,19 +634,18 @@ int main(){
 			printf("\nERROR: in pid\n");
 			return 0;
 		}
-	              //fork child
+	        //fork child
         	if(pid==0) {
-	 		//printf("\n Path:%s args1:%s-%s-%s-%s \n",cmd,args1[0],args1[1],args1[2],args1[3]);
-			//printf("\n Path:%s args1 size:%d-%d-%d-%d \n",cmd,strlen(args1[0]),strlen(args1[1]),strlen(args1[2]),strlen(args1[3]));
             		int ex = execvp(cmd,args1);
 			if(ex<0){
             			perror("exec");
             			exit(1);
 			}
-        	} else {                    //Parent
+        	} 
+		//Parent
+		else {                   
             	wait(NULL);
         	}
     }
-
     return 0;
 }
