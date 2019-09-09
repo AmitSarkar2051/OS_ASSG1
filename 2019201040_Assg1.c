@@ -568,12 +568,33 @@ int main(){
 				printf("\nMilgaya Enter . . . balleh balleh. .\n");
 				return 0;
 			}
+		//PATH, HOME, USER, HOSTNAME, PS1
 			if(!strcmp(s1,"$HOME")){
 				printf("%s\n",pwd->pw_dir);
 				flg=1;
 				break;
 			}
-			   if(!strcmp(s1,"alias")){
+
+			if(!strcmp(s1,"$USER")){
+				printf("%s\n",pwd->pw_name);
+				flg=1;
+				break;
+			}
+
+
+			if(!strcmp(s1,"$PS1")){
+				printf("%c\n",sym);
+				flg=1;
+				break;
+			}
+
+
+			if(!strcmp(s1,"$HOSTNAME")){
+				printf("%s\n",hst);
+				flg=1;
+				break;
+			}
+			   if((!strcmp(s1,"alias"))||(!strcmp(s1,"export"))){
                                 char* al=strtok(NULL,"\n");
                                 makealias(al);
                                 flg=1;
